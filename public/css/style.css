@@ -46,3 +46,39 @@
   justify-content: center;
   align-items: space-evenly;
  }
+
+ /* cards */
+ .card{
+  border: none !important;
+  margin-bottom: 2rem;
+ }
+
+ .card-img-top{
+  border-radius: 1rem;
+  height: 15rem;
+  object-fit: cover;
+ }
+
+ .card-body{
+  padding: 0 !important;
+ }
+
+ .card-text p{
+  font-weight: 400px;
+ }
+
+ .listing-link{
+  text-decoration: none;
+ }
+
+ /* card effect */
+
+ .card-img-overlay {
+  opacity: 0;
+}
+
+ .card-img-overlay:hover {
+  background-color: white;
+  opacity: 0.2;
+  transition: all 0.3s ease-in-out;
+}

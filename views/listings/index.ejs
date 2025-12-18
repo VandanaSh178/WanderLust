@@ -1,22 +1,25 @@
 <% layout("/layouts/boilerplate") %>
-  <body>
-    <h3>All Listings</h3>
+<h3>All Listings</h3>
 
-    <a href="/listings/new">➕ Add New Listing</a>
-    <br /><br />
+<a href="/listings/new">➕ Add New Listing</a>
+<br /><br />
 
-    <% if (allListings && allListings.length > 0) { %>
-      <ul>
-        <% for (let listing of allListings) { %>
-          <li>
-            <a href="/listings/<%= listing._id %>">
-              <strong><%= listing.title %></strong>
-            </a>
-          </li>
-        <% } %>
-      </ul>
-    <% } else { %>
-      <p>No listings found.</p>
+<div class="row row-cols-lg-3 row-cols-md-3 row-cols-sm-1">
+  <% if (allListings && allListings.length > 0) { %>
+    <% for (let listing of allListings) { %>
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="card col">
+        <img src="<%= listing.image %>" alt="listing_image" class="card-img-top" />
+        <div class="card-img-overlay"></div>
+        <div class="card-body">
+          <p class="card-text">
+            <b><%= listing.title %></b> <br>
+            <%= listing.price.toLocaleString("en-IN") %> / night <br>
+          </p>
+        </div>
+      </div>
+      </a>
+      
     <% } %>
-
-  </body>
+  <% } %>
+</div>
