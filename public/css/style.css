@@ -94,3 +94,9 @@ body{
   background-color: #ff385c !important;
   border: none !important;
 }
+
+/* show page */
+  .show-img{
+    height: 30vh;
+    
+  }
