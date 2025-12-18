@@ -1,0 +1,22 @@
+<% layout("/layouts/boilerplate") %>
+  <body>
+    <h3>All Listings</h3>
+
+    <a href="/listings/new">➕ Add New Listing</a>
+    <br /><br />
+
+    <% if (allListings && allListings.length > 0) { %>
+      <ul>
+        <% for (let listing of allListings) { %>
+          <li>
+            <a href="/listings/<%= listing._id %>">
+              <strong><%= listing.title %></strong>
+            </a>
+          </li>
+        <% } %>
+      </ul>
+    <% } else { %>
+      <p>No listings found.</p>
+    <% } %>
+
+  </body>
