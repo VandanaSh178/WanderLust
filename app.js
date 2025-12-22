@@ -176,9 +176,10 @@ app.use((req, res, next) => {
 // ERROR HANDLER
 // ======================
 app.use((err, req, res, next) => {
-  const { statusCode = 500, message = "Something went wrong" } = err;
-  res.status(statusCode).send(message);
+  const { statusCode = 500 } = err;
+  res.status(statusCode).render("error", { err });
 });
+
 
 // ======================
 // SERVER
