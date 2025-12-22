@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
-const ejsMate=require("ejs-mate");
+const ejsMate = require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync.js");
+const ExpressError = require("./utils/ExpressError.js");
 
 // ======================
 // DATABASE CONNECTION
@@ -12,12 +14,8 @@ const ejsMate=require("ejs-mate");
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
 main()
-  .then(() => {
-    console.log("connected to DB");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+  .then(() => console.log("connected to DB"))
+  .catch((err) => console.log(err));
 
 async function main() {
   await mongoose.connect(MONGO_URL);
@@ -26,13 +24,13 @@ async function main() {
 // ======================
 // APP CONFIG
 // ======================
+app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.engine("ejs",ejsMate);
-app.use(express.static(path.join(__dirname,"/public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
 // ROOT ROUTE
@@ -44,10 +42,13 @@ app.get("/", (req, res) => {
 // ======================
 // INDEX ROUTE
 // ======================
-app.get("/listings", async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("listings/index.ejs", { allListings });
-});
+app.get(
+  "/listings",
+  wrapAsync(async (req, res) => {
+    const allListings = await Listing.find({});
+    res.render("listings/index.ejs", { allListings });
+  })
+);
 
 // ======================
 // NEW ROUTE
@@ -59,100 +60,129 @@ app.get("/listings/new", (req, res) => {
 // ======================
 // SHOW ROUTE
 // ======================
-app.get("/listings/:id", async (req, res) => {
-  const { id } = req.params;
+app.get(
+  "/listings/:id",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).send("Invalid Listing ID");
-  }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new ExpressError("Invalid Listing ID", 400);
+    }
 
-  const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id);
 
-  if (!listing) {
-    return res.status(404).send("Listing not found");
-  }
+    if (!listing) {
+      throw new ExpressError("Listing not found", 404);
+    }
 
-  res.render("listings/show.ejs", { listing });
-});
+    res.render("listings/show.ejs", { listing });
+  })
+);
 
 // ======================
 // CREATE ROUTE
 // ======================
-app.post("/listings", async (req, res) => {
-  try {
+app.post(
+  "/listings",
+  wrapAsync(async (req, res) => {
+    if (!req.body.listing) {
+      throw new ExpressError("Invalid Listing Data", 400);
+    }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error creating listing");
-  }
-});
+  })
+);
 
 // ======================
 // EDIT ROUTE
 // ======================
-app.get("/listings/:id/edit", async (req, res) => {
-  const { id } = req.params;
+app.get(
+  "/listings/:id/edit",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).send("Invalid Listing ID");
-  }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new ExpressError("Invalid Listing ID", 400);
+    }
 
-  const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id);
 
-  if (!listing) {
-    return res.status(404).send("Listing not found");
-  }
+    if (!listing) {
+      throw new ExpressError("Listing not found", 404);
+    }
 
-  res.render("listings/edit.ejs", { listing });
-});
+    res.render("listings/edit.ejs", { listing });
+  })
+);
 
 // ======================
 // UPDATE ROUTE
 // ======================
-app.put("/listings/:id", async (req, res) => {
-  const { id } = req.params;
+app.put(
+  "/listings/:id",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).send("Invalid Listing ID");
-  }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new ExpressError("Invalid Listing ID", 400);
+    }
 
-  const updatedListing = await Listing.findByIdAndUpdate(
-    id,
-    { ...req.body.listing },
-    { new: true }
-  );
+    const updatedListing = await Listing.findByIdAndUpdate(
+      id,
+      req.body.listing,
+      { new: true }
+    );
 
-  if (!updatedListing) {
-    return res.status(404).send("Listing not found");
-  }
+    if (!updatedListing) {
+      throw new ExpressError("Listing not found", 404);
+    }
 
-  res.redirect(`/listings/${id}`);
-});
+    res.redirect(`/listings/${id}`);
+  })
+);
 
 // ======================
 // DELETE ROUTE
 // ======================
-app.delete("/listings/:id", async (req, res) => {
-  const { id } = req.params;
+app.delete(
+  "/listings/:id",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).send("Invalid Listing ID");
-  }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new ExpressError("Invalid Listing ID", 400);
+    }
 
-  const deletedListing = await Listing.findByIdAndDelete(id);
+    const deletedListing = await Listing.findByIdAndDelete(id);
 
-  if (!deletedListing) {
-    return res.status(404).send("Listing not found");
-  }
+    if (!deletedListing) {
+      throw new ExpressError("Listing not found", 404);
+    }
 
-  res.redirect("/listings");
+    res.redirect("/listings");
+  })
+);
+
+// ======================
+// 404 HANDLER
+// ======================
+app.use((req, res, next) => {
+  next(new ExpressError("Page Not Found", 404));
+});
+
+
+// ======================
+// ERROR HANDLER
+// ======================
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message = "Something went wrong" } = err;
+  res.status(statusCode).send(message);
 });
 
 // ======================
 // SERVER
 // ======================
 app.listen(8080, () => {
-  console.log("server is listening to port 8080");
+  console.log("server is listening on port 8080");
 });
