@@ -7,7 +7,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const {listingSchema}=require("./schema.js");
+const { listingSchema } = require("./schema.js");
 
 // ======================
 // DATABASE CONNECTION
@@ -15,7 +15,7 @@ const {listingSchema}=require("./schema.js");
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
 main()
-  .then(() => console.log("connected to DB"))
+  .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log(err));
 
 async function main() {
@@ -32,6 +32,19 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
+
+// ======================
+// VALIDATION MIDDLEWARE
+// ======================
+const validateListing = (req, res, next) => {
+  const { error } = listingSchema.validate(req.body.listing);
+
+  if (error) {
+    const errMsg = error.details.map(el => el.message).join(", ");
+    throw new ExpressError(errMsg, 400);
+  }
+  next();
+};
 
 // ======================
 // ROOT ROUTE
@@ -59,6 +72,19 @@ app.get("/listings/new", (req, res) => {
 });
 
 // ======================
+// CREATE ROUTE
+// ======================
+app.post(
+  "/listings",
+  validateListing,
+  wrapAsync(async (req, res) => {
+    const newListing = new Listing(req.body.listing);
+    await newListing.save();
+    res.redirect("/listings");
+  })
+);
+
+// ======================
 // SHOW ROUTE
 // ======================
 app.get(
@@ -71,30 +97,11 @@ app.get(
     }
 
     const listing = await Listing.findById(id);
-
     if (!listing) {
       throw new ExpressError("Listing not found", 404);
     }
 
     res.render("listings/show.ejs", { listing });
-  })
-);
-
-// ======================
-// CREATE ROUTE
-// ======================
-app.post(
-  "/listings",
-  wrapAsync(async (req, res) => {
-    let result = await listingSchema.validateAsync(req.body);
-    console.log(result);
-    if (result.error) {
-      const msg = result.error.details.map((el) => el.message).join(",");
-      throw new ExpressError(msg, 400);
-    }
-    const newListing = new Listing(req.body.listing);
-    await newListing.save();
-    res.redirect("/listings");
   })
 );
 
@@ -111,7 +118,6 @@ app.get(
     }
 
     const listing = await Listing.findById(id);
-
     if (!listing) {
       throw new ExpressError("Listing not found", 404);
     }
@@ -125,6 +131,7 @@ app.get(
 // ======================
 app.put(
   "/listings/:id",
+  validateListing,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
 
@@ -135,7 +142,7 @@ app.put(
     const updatedListing = await Listing.findByIdAndUpdate(
       id,
       req.body.listing,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     if (!updatedListing) {
@@ -159,7 +166,6 @@ app.delete(
     }
 
     const deletedListing = await Listing.findByIdAndDelete(id);
-
     if (!deletedListing) {
       throw new ExpressError("Listing not found", 404);
     }
@@ -169,25 +175,24 @@ app.delete(
 );
 
 // ======================
-// 404 HANDLER
+// 404 HANDLER (NODE 22 SAFE)
 // ======================
 app.use((req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
 });
-
 
 // ======================
 // ERROR HANDLER
 // ======================
 app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
-  res.status(statusCode).render("error", { err });
+  if (!err.message) err.message = "Something went wrong";
+  res.status(statusCode).render("error.ejs", { err });
 });
-
 
 // ======================
 // SERVER
 // ======================
 app.listen(8080, () => {
-  console.log("server is listening on port 8080");
+  console.log("Server is listening on port 8080");
 });
