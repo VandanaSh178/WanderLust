@@ -7,6 +7,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const {listingSchema}=require("./schema.js");
 
 // ======================
 // DATABASE CONNECTION
@@ -85,8 +86,11 @@ app.get(
 app.post(
   "/listings",
   wrapAsync(async (req, res) => {
-    if (!req.body.listing) {
-      throw new ExpressError("Invalid Listing Data", 400);
+    let result = await listingSchema.validateAsync(req.body);
+    console.log(result);
+    if (result.error) {
+      const msg = result.error.details.map((el) => el.message).join(",");
+      throw new ExpressError(msg, 400);
     }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
