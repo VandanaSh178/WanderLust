@@ -1,35 +1,63 @@
-<% layout("/layouts/boilerplate") %>
+<%
+// Use boilerplate layout
+layout("/layouts/boilerplate")
+%>
 
 <% if (listing) { %>
 
+<!-- ===================== BACK LINK & HEADING ===================== -->
 <div class="row">
   <div class="col-8 offset-2">
     <a href="/listings">← Back to all listings</a>
     <br /><br />
-    <h3>Listing Details :</h3>
+    <h3>Listing Details</h3>
   </div>
 </div>
 
+<!-- ===================== LISTING CARD ===================== -->
 <div class="row">
   <div class="col-6 offset-3">
 
-    <div class="card">
-      <img src="<%= listing.image %>" class="card-img-top show-img" alt="listing_image">
+    <div class="card listing-card">
+      <!-- Listing Image -->
+      <img 
+        src="<%= listing.image %>" 
+        class="card-img-top show-img" 
+        alt="listing image"
+      />
+
+      <!-- Listing Info -->
       <div class="card-body">
-        <h5 class="card-title"><b><%= listing.title %></b></h5>
+        <h5 class="card-title">
+          <b><%= listing.title %></b>
+        </h5>
+
         <p class="card-text"><%= listing.description %></p>
-        <p class="card-text">Price: &#8377; <%= listing.price.toLocaleString("en-IN") %></p>
-        <p class="card-text">Location: <%= listing.location %></p>
-        <p class="card-text">Country: <%= listing.country %></p>
+
+        <p class="card-text">
+          Price: ₹ <%= listing.price.toLocaleString("en-IN") %>
+        </p>
+
+        <p class="card-text">
+          Location: <%= listing.location %>
+        </p>
+
+        <p class="card-text">
+          Country: <%= listing.country %>
+        </p>
       </div>
     </div>
 
     <br />
 
+    <!-- ===================== EDIT & DELETE BUTTONS ===================== -->
     <div class="row">
       <div class="col-auto">
-        <a href="/listings/<%= listing._id %>/edit" class="btn btn-primary">
-          Edit this Listing
+        <a 
+          href="/listings/<%= listing._id %>/edit" 
+          class="btn btn-primary"
+        >
+          Edit Listing
         </a>
       </div>
 
@@ -39,16 +67,93 @@
           action="/listings/<%= listing._id %>?_method=DELETE"
           onsubmit="return confirm('Are you sure you want to delete this listing?');"
         >
-          <button class="btn btn-danger">Delete this listing</button>
+          <button class="btn btn-danger">
+            Delete Listing
+          </button>
         </form>
       </div>
     </div>
+
+    <!-- ===================== REVIEW FORM ===================== -->
+    <div class="col-8 offset-3">
+      <hr />
+
+      <h4>Leave a Review</h4>
+
+      <!-- Review Form -->
+      <form 
+        action="/listings/<%= listing._id %>/reviews" 
+        method="POST"
+      >
+
+        <!-- Rating -->
+        <div class="mb-3 mt-3">
+          <label class="form-label">Rating</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            name="review[rating]"
+            class="form-range"
+          />
+        </div>
+
+        <!-- Comment -->
+        <div class="mb-3 mt-3">
+          <label class="form-label">Comment</label>
+          <textarea
+            name="review[comment]"
+            rows="5"
+            class="form-control"
+            required
+          ></textarea>
+        </div>
+
+        <button class="btn btn-outline-dark">
+          Submit Review
+        </button>
+      </form>
+
+      <hr />
+
+      <!-- ===================== ALL REVIEWS ===================== -->
+      <h4>All Reviews</h4>
+
+      <% if (listing.reviews.length > 0) { %>
+        <div class="row">
+          <% for (let review of listing.reviews) { %>
+            <div class="card col-5 ms-3 mb-3">
+              <div class="card-body">
+                <h6 class="card-title">Jane Doe</h6>
+
+                <p class="card-text"><%= review.comment %></p>
+                <p class="card-text">⭐ <%= review.rating %>/5</p>
+
+                <!-- DELETE REVIEW BUTTON -->
+                <form
+                  method="POST"
+                  action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                  onsubmit="return confirm('Delete this review?');"
+                >
+                  <button class="btn btn-sm btn-danger">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } else { %>
+        <p class="text-muted">No reviews yet.</p>
+      <% } %>
+
 
   </div>
 </div>
 
 <% } else { %>
 
+<!-- ===================== LISTING NOT FOUND ===================== -->
 <div class="row">
   <div class="col-8 offset-2">
     <h2>Listing not found ❌</h2>
