@@ -1,79 +1,90 @@
-🏡 Wanderlust – Airbnb Clone
+# 🏡 Wanderlust – Airbnb Clone
 
-A full-stack Airbnb-style web application built using Node.js, Express, MongoDB, and EJS, inspired by the Apna College Web Development tutorial.
-This project demonstrates CRUD operations, database relationships, authentication-ready structure, and RESTful routing.
+Wanderlust is a full-stack Airbnb-style web application built using **Node.js, Express, MongoDB, and EJS**.  
+This project is inspired by the **Apna College Web Development Tutorial** and focuses on building strong backend fundamentals with real-world features.
 
-🚀 Features
-🏘️ Listings
+---
 
-Create, view, edit, and delete property listings
+## 🚀 Features
 
-Each listing contains:
+### 🏘️ Listings
+- Create, view, edit, and delete property listings
+- Each listing includes:
+  - Title
+  - Description
+  - Price
+  - Location & Country
+  - Image URL (default image supported)
 
-Title
+### ⭐ Reviews
+- Add reviews to listings
+- Rating system (1–5)
+- Comment support
+- Delete reviews
+- Reviews are linked to listings using MongoDB relationships
 
-Description
+### 🔐 Validations & Error Handling
+- Server-side validation using Joi
+- Custom error handling middleware
+- Confirmation prompt before deletion
+- Graceful handling of invalid routes
 
-Price (₹ format)
+### 🎨 UI
+- Responsive design with Bootstrap
+- EJS templating
+- Clean and simple card-based layout
 
-Location & Country
+---
 
-Image URL
+## 🛠️ Tech Stack
 
-⭐ Reviews
+**Frontend**
+- EJS
+- Bootstrap 5
+- HTML5
+- CSS3
 
-Users can add reviews with:
+**Backend**
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
 
-Rating (1–5)
+**Utilities**
+- Method-Override
+- Joi
+- Express Error Middleware
 
-Comment
+---
 
-Reviews are associated with listings
-
-Users can delete reviews
-
-Proper MongoDB relationship handling
-
-🔐 Validations & Safety
-
-Server-side validation using Joi
-
-Confirmation prompt before deleting listings
-
-Graceful error handling for invalid routes and data
-
-🎨 UI
-
-Responsive UI using Bootstrap
-
-Dynamic EJS templates
-
-Clean card-based design
-
-🛠️ Tech Stack
-
-Frontend
-
-EJS (Embedded JavaScript Templates)
-
-Bootstrap 5
-
-HTML5 & CSS3
-
-Backend
-
-Node.js
-
-Express.js
-
-MongoDB
-
-Mongoose
-
-Other Tools
-
-Method-Override
-
-Joi (Validation)
-
-Express Error Handling Middleware
+## 📁 Project Structure
+Wanderlust/
+│
+├── models/
+│ ├── listing.js
+│ └── review.js
+│
+├── routes/
+│ ├── listings.js
+│ └── reviews.js
+│
+├── views/
+│ ├── layouts/
+│ │ └── boilerplate.ejs
+│ ├── listings/
+│ │ ├── index.ejs
+│ │ ├── show.ejs
+│ │ ├── new.ejs
+│ │ └── edit.ejs
+│
+├── public/
+│ ├── css/
+│ └── js/
+│
+├── utils/
+│ ├── ExpressError.js
+│ └── wrapAsync.js
+│
+├── app.js
+├── package.json
+└── README.md
