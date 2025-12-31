@@ -8,6 +8,7 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const { listingSchema } = require("./schema.js");
+const Review = require("./models/review.js");
 
 // ======================
 // DATABASE CONNECTION
@@ -96,7 +97,7 @@ app.get(
       throw new ExpressError("Invalid Listing ID", 400);
     }
 
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     if (!listing) {
       throw new ExpressError("Listing not found", 404);
     }
@@ -171,6 +172,53 @@ app.delete(
     }
 
     res.redirect("/listings");
+  })
+);
+
+// REVIEW ROUTES WOULD GO HERE
+app.post(
+  "/listings/:id/reviews",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+
+    // ✅ ObjectId validation
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new ExpressError("Invalid Listing ID", 400);
+    }
+
+    // ✅ Find listing
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      throw new ExpressError("Listing not found", 404);
+    }
+
+    // ✅ Create & save review
+    const newReview = new Review(req.body.review);
+    await newReview.save();
+
+    // ✅ Push review _id (best practice)
+    listing.reviews.push(newReview._id);
+    await listing.save();
+
+    res.redirect(`/listings/${id}`);
+  })
+);
+
+// DELETE REVIEWS
+app.delete(
+  "/listings/:id/reviews/:reviewId",
+  wrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+
+    // 1️⃣ Remove review reference from listing
+    await Listing.findByIdAndUpdate(id, {
+      $pull: { reviews: reviewId },
+    });
+
+    // 2️⃣ Delete review document
+    await Review.findByIdAndDelete(reviewId);
+
+    res.redirect(`/listings/${id}`);
   })
 );
 
